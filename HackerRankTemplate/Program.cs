@@ -1,20 +1,60 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 class Solution
 {
-    interface IInputReader
+    static void Main(String[] args)
+    {
+        if (Debugger.IsAttached)
+        {
+            // Place input in a file called "input.txt" alongside Program.cs
+            // Place expected output in a file called "output.txt" alongside Program.cs
+            // Make sure both files are copied to the output directory.
+            _readerWriter = new TestFileReaderWriterWriter();
+        }
+        else
+        {
+            // The normal case.
+            _readerWriter = new ConsoleReaderWriterWriter();
+        }
+
+        //
+        // YOUR CODE HERE
+        //
+
+        if (Debugger.IsAttached)
+        {
+            Console.WriteLine("All finished!");
+            Console.ReadKey();
+        }
+    }
+
+    #region Stuff to make using HackerRank easier...
+    interface IInputReaderWriter
     {
         string ReadLine();
         int ReadLineToInt();
         int[] ReadLineToIntArray();
         bool[] ReadLineToBoolArray(Func<char, bool> converter);
+        void WriteLine();
+        void Write(string format, params object[] args);
+        void WriteLine(string format, params object[] args);
+        void WriteLine(object o);
     }
 
-    abstract class ReaderBase : IInputReader, IDisposable
+    abstract class ReaderWriterWriterBase : IInputReaderWriter, IDisposable
     {
         public abstract string ReadLine();
+        public abstract void Write(string format, params object[] args);
+        public abstract void WriteLine(string format, params object[] args);
+        public void WriteLine(object o)
+        {
+            WriteLine(o.ToString());
+        }
+
+        public abstract void WriteLine();
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -38,9 +78,10 @@ class Solution
         {
             return Array.ConvertAll(ReadLine().ToCharArray(), converter.Invoke);
         }
+
     }
 
-    class ConsoleReader : ReaderBase
+    class ConsoleReaderWriterWriter : ReaderWriterWriterBase
     {
         /// <summary>
         /// Reads a line of characters from the text reader and returns the data as a string.
@@ -54,46 +95,69 @@ class Solution
             return Console.ReadLine();
         }
 
+        public override void WriteLine()
+        {
+            Console.WriteLine();
+        }
+
+        public override void Write(string format, params object[] args)
+        {
+            Console.Write(format, args);
+        }
+
+        public override void WriteLine(string format, params object[] args)
+        {
+            Console.WriteLine(format, args);
+        }
     }
 
-    class TestFileReader : ReaderBase
+    class TestFileReaderWriterWriter : ReaderWriterWriterBase
     {
         private TextReader _myReader = File.OpenText("input.txt");
-
+        private TextReader _myOutputReader = File.OpenText("expectedOutput.txt");
+        private StringBuilder _currentLine = new StringBuilder();
+        private int currentLineNumber = 1;
         public override string ReadLine()
         {
             return _myReader.ReadLine();
         }
 
+        public override void WriteLine()
+        {
+            CheckCurrentLine();
+            _currentLine.Clear();
+            currentLineNumber++;
+        }
+
+        public override void Write(string format, params object[] args)
+        {
+            _currentLine.AppendFormat(format, args);
+        }
+
+        public override void WriteLine(string format, params object[] args)
+        {
+            Write(format, args);
+            WriteLine();
+        }
+
+        private void CheckCurrentLine()
+        {
+            var nextLine = _myOutputReader.ReadLine().Trim();
+            var currentLine = _currentLine.ToString().Trim();
+
+            if (nextLine != currentLine) { throw new Exception("oy: line " + currentLineNumber); }
+        }
+
         public override void Dispose()
         {
-            _myReader.Close();
-            _myReader.Dispose();
-            _myReader = null;
+            foreach (var tr in new[] { _myReader, _myOutputReader })
+            {
+                tr.Close();
+                tr.Dispose();
+            }
         }
     }
 
-    private static IInputReader _reader;
-
-    static void Main(String[] args)
-    {
-        if (Debugger.IsAttached)
-        {
-            _reader = new TestFileReader();
-        }
-        else
-        {
-            _reader = new ConsoleReader();
-        }
-
-        //
-        // your code here
-        //
-
-
-        if (Debugger.IsAttached)
-        {
-            Console.ReadKey(); 
-        }
-    }
+    private static IInputReaderWriter _readerWriter;
+    #endregion
 }
