@@ -10,14 +10,14 @@ class Solution
         if (Debugger.IsAttached)
         {
             // Place input in a file called "input.txt" alongside Program.cs
-            // Place expected output in a file called "output.txt" alongside Program.cs
+            // Optionally, place expected output in a file called "expectedOutput.txt" alongside Program.cs
             // Make sure both files are copied to the output directory.
-            _readerWriter = new TestFileReaderWriterWriter();
+            _readerWriter = new TestFileReaderWriter();
         }
         else
         {
             // The normal case.
-            _readerWriter = new ConsoleReaderWriterWriter();
+            _readerWriter = new ConsoleReaderWriter();
         }
 
         //
@@ -26,7 +26,8 @@ class Solution
 
         if (Debugger.IsAttached)
         {
-            Console.WriteLine("All finished!");
+            Console.WriteLine("----------------");
+            Console.WriteLine("Press any key to exit");
             Console.ReadKey();
         }
     }
@@ -35,6 +36,7 @@ class Solution
     interface IInputReaderWriter
     {
         string ReadLine();
+        long ReadLineToLong();
         int ReadLineToInt();
         int[] ReadLineToIntArray();
         bool[] ReadLineToBoolArray(Func<char, bool> converter);
@@ -44,11 +46,14 @@ class Solution
         void WriteLine(object o);
     }
 
-    abstract class ReaderWriterWriterBase : IInputReaderWriter, IDisposable
+    abstract class ReaderWriterBase : IInputReaderWriter, IDisposable
     {
         public abstract string ReadLine();
+
         public abstract void Write(string format, params object[] args);
+
         public abstract void WriteLine(string format, params object[] args);
+
         public void WriteLine(object o)
         {
             WriteLine(o.ToString());
@@ -69,6 +74,11 @@ class Solution
             return int.Parse(ReadLine().Trim());
         }
 
+        public long ReadLineToLong()
+        {
+            return long.Parse(ReadLine().Trim());
+        }
+
         public int[] ReadLineToIntArray()
         {
             return Array.ConvertAll(ReadLine().Trim().Split(' '), int.Parse);
@@ -81,7 +91,7 @@ class Solution
 
     }
 
-    class ConsoleReaderWriterWriter : ReaderWriterWriterBase
+    class ConsoleReaderWriter : ReaderWriterBase
     {
         /// <summary>
         /// Reads a line of characters from the text reader and returns the data as a string.
@@ -111,10 +121,10 @@ class Solution
         }
     }
 
-    class TestFileReaderWriterWriter : ReaderWriterWriterBase
+    class TestFileReaderWriter : ReaderWriterBase
     {
         private TextReader _myReader = File.OpenText("input.txt");
-        private TextReader _myOutputReader = File.OpenText("expectedOutput.txt");
+        private TextReader _myOutputReader = File.Exists("expectedOutput.txt") ? File.OpenText("expectedOutput.txt") : null;
         private StringBuilder _currentLine = new StringBuilder();
         private int currentLineNumber = 1;
         public override string ReadLine()
@@ -142,10 +152,14 @@ class Solution
 
         private void CheckCurrentLine()
         {
-            var nextLine = _myOutputReader.ReadLine().Trim();
-            var currentLine = _currentLine.ToString().Trim();
+            Console.WriteLine(_currentLine);
+            if (_myOutputReader != null)
+            {
+                var nextLine = _myOutputReader.ReadLine().Trim();
+                var currentLine = _currentLine.ToString().Trim();
 
-            if (nextLine != currentLine) { throw new Exception("oy: line " + currentLineNumber); }
+                if (nextLine != currentLine) { throw new Exception("oy: line " + currentLineNumber); }
+            }
         }
 
         public override void Dispose()
