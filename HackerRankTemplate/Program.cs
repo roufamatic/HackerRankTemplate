@@ -13,7 +13,7 @@ class Solution
     //    optionally, place output in a file called "expectedOutput.txt" -- an error will be thrown as soon as an expected line doesn't match your output.
     //    Make sure the files are copied to the output directory (in properties).
 
-    private static void SolvePuzzle(IInputReaderWriter readerWriter)
+    private static void SolvePuzzle(IReaderWriter readerWriter)
     {
         // Your code goes in this method.
         // Consider using the following snippet if there are T test cases presented on line one.
@@ -27,7 +27,7 @@ class Solution
 
     static void Main(String[] args)
     {
-        IInputReaderWriter readerWriter = null;
+        IReaderWriter readerWriter = null;
         try
         {
             if (Debugger.IsAttached)
@@ -54,7 +54,7 @@ class Solution
         }
     }
 
-    interface IInputReaderWriter : IDisposable
+    interface IReaderWriter : IDisposable
     {
         string ReadLine();
         int ReadLineToInt();
@@ -67,7 +67,7 @@ class Solution
         void WriteLine(object o);
     }
 
-    abstract class ReaderWriterBase : IInputReaderWriter
+    abstract class ReaderWriterBase : IReaderWriter
     {
         public abstract string ReadLine();
         public abstract void Write(string format, params object[] args);
