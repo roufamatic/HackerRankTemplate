@@ -7,7 +7,7 @@ At some point it would be nice to have the actual template file in here. For now
 after export, you'll be able to create a new project immediately.
 2. Alternately, create your own Console application, then just copy the contents of Program.cs into your file and go from there.
 
-The program has one made method called *SolvePuzzle* which takes an IReaderWriter. Use the IReaderWriter methods to interact with the
+The program has one stub method called *SolvePuzzle* which takes an IReaderWriter parameter. Use the IReaderWriter methods to interact with the
 console. 
 
 When running, the boilerplate will detect whether a debugger is attached. If not, a ConsoleReaderWriter will be used to manage
