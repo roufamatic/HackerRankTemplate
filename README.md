@@ -16,3 +16,6 @@ interactions with the console. If a debugger IS attached, a TextFileReaderWriter
 * Optionally, compares your outputs line-by-line to a file called *expectedOutput.txt*
 
 This makes it easy to debug test cases from HackerRank.
+
+When everything looks good, copy your entire Program.cs file into the HackerRank text box. As long as you didn't get all fancy by putting your helper
+classes in their own files (the horror!) it should Just Work.
