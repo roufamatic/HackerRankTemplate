@@ -1,43 +1,64 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 class Solution
 {
-    static void Main(String[] args)
+    // Implement this method to solve the puzzle. Use readerWriter methods to read input / write output.
+    // For local runs: 
+    //    place input in a file called "input.txt" alongside Program.cs. 
+    //    optionally, place output in a file called "expectedOutput.txt" -- an error will be thrown as soon as an expected line doesn't match your output.
+    //    Make sure the files are copied to the output directory (in properties).
+
+    private static void SolvePuzzle(IInputReaderWriter readerWriter)
     {
-        if (Debugger.IsAttached)
+        // Your code goes in this method.
+        // Consider using the following snippet if there are T test cases presented on line one.
+        int testCases = readerWriter.ReadLineToInt();
+        for (int t = 0; t < testCases; t++)
         {
-            // Place input in a file called "input.txt" alongside Program.cs
-            // Optionally, place expected output in a file called "expectedOutput.txt" alongside Program.cs
-            // Make sure both files are copied to the output directory.
-            _readerWriter = new TestFileReaderWriter();
-        }
-        else
-        {
-            // The normal case.
-            _readerWriter = new ConsoleReaderWriter();
-        }
-
-        //
-        // YOUR CODE HERE
-        //
-
-        if (Debugger.IsAttached)
-        {
-            Console.WriteLine("----------------");
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
         }
     }
 
-    #region Stuff to make using HackerRank easier...
-    interface IInputReaderWriter
+    #region Stuff to make life easier...
+
+    static void Main(String[] args)
+    {
+        IInputReaderWriter readerWriter = null;
+        try
+        {
+            if (Debugger.IsAttached)
+            {
+                readerWriter = new TestFileReaderWriter();
+            }
+            else
+            {
+                // The normal case.
+                readerWriter = new ConsoleReaderWriter();
+            }
+
+            SolvePuzzle(readerWriter);
+
+            if (Debugger.IsAttached)
+            {
+                Console.WriteLine("All finished!");
+                Console.ReadKey();
+            }
+        }
+        finally
+        {
+            if (readerWriter != null) readerWriter.Dispose();
+        }
+    }
+
+    interface IInputReaderWriter : IDisposable
     {
         string ReadLine();
-        long ReadLineToLong();
         int ReadLineToInt();
+        long ReadLineToLong();
         int[] ReadLineToIntArray();
         bool[] ReadLineToBoolArray(Func<char, bool> converter);
         void WriteLine();
@@ -46,14 +67,11 @@ class Solution
         void WriteLine(object o);
     }
 
-    abstract class ReaderWriterBase : IInputReaderWriter, IDisposable
+    abstract class ReaderWriterBase : IInputReaderWriter
     {
         public abstract string ReadLine();
-
         public abstract void Write(string format, params object[] args);
-
         public abstract void WriteLine(string format, params object[] args);
-
         public void WriteLine(object o)
         {
             WriteLine(o.ToString());
@@ -71,12 +89,14 @@ class Solution
 
         public int ReadLineToInt()
         {
-            return int.Parse(ReadLine().Trim());
+            string line = ReadLine();
+            return int.Parse(line.Trim());
         }
 
         public long ReadLineToLong()
         {
-            return long.Parse(ReadLine().Trim());
+            string line = ReadLine();
+            return long.Parse(line.Trim());
         }
 
         public int[] ReadLineToIntArray()
@@ -124,7 +144,7 @@ class Solution
     class TestFileReaderWriter : ReaderWriterBase
     {
         private TextReader _myReader = File.OpenText("input.txt");
-        private TextReader _myOutputReader = File.Exists("expectedOutput.txt") ? File.OpenText("expectedOutput.txt") : null;
+        private TextReader _myOutputReader = File.Exists("expectedOuptut.txt") ? File.OpenText("expectedOutput.txt") : null;
         private StringBuilder _currentLine = new StringBuilder();
         private int currentLineNumber = 1;
         public override string ReadLine()
@@ -134,8 +154,12 @@ class Solution
 
         public override void WriteLine()
         {
-            CheckCurrentLine();
-            _currentLine.Clear();
+            Console.WriteLine(_currentLine);
+            if (_myOutputReader != null)
+            {
+                CheckCurrentLine();
+                _currentLine.Clear();
+            }
             currentLineNumber++;
         }
 
@@ -152,26 +176,24 @@ class Solution
 
         private void CheckCurrentLine()
         {
-            Console.WriteLine(_currentLine);
-            if (_myOutputReader != null)
-            {
-                var nextLine = _myOutputReader.ReadLine().Trim();
-                var currentLine = _currentLine.ToString().Trim();
+            var nextLine = _myOutputReader.ReadLine().Trim();
+            var currentLine = _currentLine.ToString().Trim();
 
-                if (nextLine != currentLine) { throw new Exception("oy: line " + currentLineNumber); }
-            }
+            if (nextLine != currentLine) { throw new Exception("oy: line " + currentLineNumber); }
         }
 
         public override void Dispose()
         {
             foreach (var tr in new[] { _myReader, _myOutputReader })
             {
-                tr.Close();
-                tr.Dispose();
+                if (tr != null)
+                {
+                    tr.Close();
+                    tr.Dispose();
+                }
             }
         }
     }
-
-    private static IInputReaderWriter _readerWriter;
     #endregion
 }
+
