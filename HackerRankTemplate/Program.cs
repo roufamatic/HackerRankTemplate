@@ -144,7 +144,7 @@ class Solution
     class TestFileReaderWriter : ReaderWriterBase
     {
         private TextReader _myReader = File.OpenText("input.txt");
-        private TextReader _myOutputReader = File.Exists("expectedOuptut.txt") ? File.OpenText("expectedOutput.txt") : null;
+        private TextReader _myOutputReader = File.Exists("expectedOutput.txt") ? File.OpenText("expectedOutput.txt") : null;
         private StringBuilder _currentLine = new StringBuilder();
         private int currentLineNumber = 1;
         public override string ReadLine()
